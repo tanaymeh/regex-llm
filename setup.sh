@@ -23,7 +23,7 @@ echo "⚙️  Compiling and installing fast_regex..."
 uv pip install ./src/fast_regex_csrc --no-build-isolation
 
 # 5. Launch Training
-echo "🔥 Starting GRPO Training..."
+# echo "🔥 Starting GRPO Training..."
 # export VLLM_GPU_MEMORY_UTILIZATION=0.4 # Uncomment if using vLLM
 export WANDB_PROJECT="regex-r1"
-uv run src/train.py
+# uv run src/train.py

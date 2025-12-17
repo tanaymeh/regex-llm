@@ -58,25 +58,24 @@ def main():
 
     training_args = GRPOConfig(
         output_dir=TrainingConfig.OUTPUT_DIR,
-        run_name=f"grpo-qwen-regex-{torch.cuda.device_count()}gpu",
+        run_name=f"grpo-fft-140gb",
         bf16=True,
-        # optim="adamw_bnb_8bit",
+        optim="adamw_torch",  # Standard AdamW is fine with 140GB (faster than 8-bit)
         # use_vllm=True,
-        # vllm_gpu_memory_utilization=0.5,  # 24GB for vLLM, 24GB for Training
-        num_generations=16,
+        # vllm_gpu_memory_utilization=0.4,
+        num_generations=32,
+        per_device_train_batch_size=1,
+        generation_batch_size=32,
+        # Effective Batch Size = 1 (device) * 16 (accum) = 16
+        gradient_accumulation_steps=16,
         max_prompt_length=512,
-        max_completion_length=128,
-        per_device_train_batch_size=4,
-        per_device_eval_batch_size=16,
-        generation_batch_size=16,
-        gradient_accumulation_steps=2,
+        max_completion_length=512,
         learning_rate=5e-6,
         gradient_checkpointing=True,
         eval_strategy="steps",
-        eval_steps=100,
-        save_steps=100,
-        logging_steps=10,
-        num_train_epochs=2,
+        eval_steps=50,
+        save_steps=50,
+        logging_steps=1,
         report_to="wandb",
     )
 
