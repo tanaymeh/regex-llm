@@ -1,5 +1,6 @@
 # Reward functions
 import re
+import random
 import fast_regex
 
 
@@ -27,9 +28,17 @@ def soft_format_reward_func(prompts, completions, **kwargs):
         regex = extract_regex(r)
         try:
             re.compile(regex)
-            rewards.append(0.1)  # small reward for generating a valid regex
+            score = 0.5  # small reward for generating a valid regex
         except:
-            rewards.append(-1.0)  # big negative reward for generating an invalid regex
+            if "```" in r:
+                score = -0.5  # partial credit for correct structure
+            else:
+                score = -1.0  # big negative reward for generating an invalid regex
+        score += random.uniform(
+            -0.005, 0.005
+        )  # small noise to ensure we don't get 0 std
+        rewards.append(score)
+
     return rewards
 
 
@@ -47,7 +56,7 @@ def correctness_reward_func(prompts, completions, **kwargs):
         try:
             re.compile(regex)
         except:
-            rewards.append(-1.0)
+            rewards.append(-1.0 + random.uniform(-0.005, 0.005))
             continue
 
         match_limit = 50000  # Stricter limit for speed
@@ -66,7 +75,8 @@ def correctness_reward_func(prompts, completions, **kwargs):
 
         p_score = p_matches / len(p_cases) if p_cases else 0
         n_score = n_non_matches / len(n_cases) if n_cases else 0
+        final_score = (p_score + n_score) / 2.0
 
-        rewards.append((p_score + n_score) / 2.0)
+        rewards.append(final_score + random.uniform(-0.001, 0.001))
 
     return rewards
