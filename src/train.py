@@ -10,7 +10,7 @@ from utils import soft_format_reward_func, correctness_reward_func
 
 
 class TrainingConfig:
-    MODEL_NAME = "Qwen/Qwen3-4B-Instruct-2507-FP8"
+    MODEL_NAME = "Qwen/Qwen3-4B-Instruct-2507"
     # MODEL_NAME = "Qwen/Qwen2.5-0.5B-Instruct"
     DATASET_PATH = "data/data.json"
     WANDB_PROJECT = "regex-r1"
