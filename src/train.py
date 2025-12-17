@@ -66,6 +66,7 @@ def main():
         max_prompt_length=512,
         max_completion_length=128,
         per_device_train_batch_size=4,
+        per_device_eval_batch_size=16,
         gradient_accumulation_steps=2,
         learning_rate=5e-6,
         gradient_checkpointing=True,
