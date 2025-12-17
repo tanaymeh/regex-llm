@@ -7,8 +7,8 @@ echo "🚀 Starting Environment Setup..."
 # - libpcre2-dev: Required for your regex logic
 # - python3-dev: Required for PyBind11 headers
 echo "📦 Installing system libraries..."
-sudo apt-get update
-sudo apt-get install -y libpcre2-dev python3-dev build-essential
+apt-get update
+apt-get install -y libpcre2-dev python3-dev build-essential
 
 # 2. Install Python Build Tools
 # (Ensure pybind11 is there before we try to compile)
