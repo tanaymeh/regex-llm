@@ -60,8 +60,8 @@ def main():
         output_dir=TrainingConfig.OUTPUT_DIR,
         run_name=f"grpo-qwen-regex-{torch.cuda.device_count()}gpu",
         bf16=True,
-        use_vllm=True,
-        vllm_gpu_memory_utilization=0.5,  # 24GB for vLLM, 24GB for Training
+        # use_vllm=True,
+        # vllm_gpu_memory_utilization=0.5,  # 24GB for vLLM, 24GB for Training
         num_generations=16,
         max_prompt_length=512,
         max_completion_length=128,
