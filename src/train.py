@@ -61,7 +61,6 @@ def main():
         run_name=f"grpo-qwen-regex-{torch.cuda.device_count()}gpu",
         bf16=True,
         use_vllm=True,
-        vllm_device="cuda:0",
         vllm_gpu_memory_utilization=0.5,  # 24GB for vLLM, 24GB for Training
         num_generations=16,
         max_prompt_length=512,
@@ -70,7 +69,7 @@ def main():
         gradient_accumulation_steps=2,
         learning_rate=5e-6,
         gradient_checkpointing=True,
-        evaluation_strategy="steps",
+        eval_strategy="steps",
         eval_steps=100,
         save_steps=100,
         logging_steps=10,
