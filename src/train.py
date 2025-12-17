@@ -66,6 +66,7 @@ def main():
         num_generations=32,
         per_device_train_batch_size=1,
         generation_batch_size=32,
+        per_device_eval_batch_size=32,
         # Effective Batch Size = 1 (device) * 16 (accum) = 16
         gradient_accumulation_steps=16,
         max_prompt_length=512,
