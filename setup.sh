@@ -3,6 +3,8 @@ set -e  # Exit immediately if any command fails
 
 echo "🚀 Starting Environment Setup..."
 
+uv sync
+
 # 1. Install System Dependencies (Crucial for C++ compilation)
 # - libpcre2-dev: Required for your regex logic
 # - python3-dev: Required for PyBind11 headers
@@ -19,11 +21,6 @@ uv pip install pybind11 setuptools wheel
 # Points to the folder containing setup.py (adjust path if needed)
 echo "⚙️  Compiling and installing fast_regex..."
 uv pip install ./src/fast_regex_csrc --no-build-isolation
-
-# 4. Install Training Dependencies
-# (If you have a requirements.txt or pyproject.toml for the main project)
-echo "📚 Installing training dependencies..."
-uv pip install -r requirements.txt
 
 # 5. Launch Training
 echo "🔥 Starting GRPO Training..."
