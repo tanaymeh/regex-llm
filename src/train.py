@@ -64,7 +64,7 @@ def main():
         # use_vllm=True,
         # vllm_gpu_memory_utilization=0.4,
         num_generations=32,
-        per_device_train_batch_size=1,
+        per_device_train_batch_size=4,
         generation_batch_size=32,
         per_device_eval_batch_size=32,
         # Effective Batch Size = 1 (device) * 16 (accum) = 16
