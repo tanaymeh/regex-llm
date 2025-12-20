@@ -16,8 +16,8 @@ from utils import (
 
 
 class TrainingConfig:
-    MODEL_NAME = "Qwen/Qwen3-4B"
-    # MODEL_NAME = "Qwen/Qwen2.5-0.5B-Instruct"
+    # MODEL_NAME = "Qwen/Qwen3-4B"
+    MODEL_NAME = "Qwen/Qwen3-1.7B"
     DATASET_PATH = "data/data.json"
     WANDB_PROJECT = "regex-r1"
     OUTPUT_DIR = "regex-r1-checkpoint"
@@ -79,13 +79,13 @@ def main():
         # use_vllm=True,
         # vllm_gpu_memory_utilization=0.4,
         num_generations=32,
-        per_device_train_batch_size=8,
+        per_device_train_batch_size=16,
         generation_batch_size=32,
         per_device_eval_batch_size=32,
         # Effective Batch Size = 32 (device) * 2 (accum) = 64
-        gradient_accumulation_steps=8,
+        gradient_accumulation_steps=4,
         max_prompt_length=512,
-        max_completion_length=2048,
+        max_completion_length=4096,
         learning_rate=5e-6,
         gradient_checkpointing=True,
         eval_strategy="steps",
