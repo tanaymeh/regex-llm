@@ -83,6 +83,7 @@ def main():
         save_steps=50,
         logging_steps=1,
         report_to="wandb",
+        project=TrainingConfig.WANDB_PROJECT,
     )
 
     trainer = GRPOTrainer(
