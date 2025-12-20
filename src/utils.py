@@ -2,6 +2,8 @@
 import re
 import random
 import fast_regex
+import Levenshtein
+import string
 
 
 class TimeoutException(Exception):
@@ -19,13 +21,36 @@ def extract_regex(text: str) -> str:
     return text.strip()
 
 
+def extract_boxed(text):
+    """Extract content from \boxed{} including nested braces"""
+    pattern = r"\\boxed\{"
+    matches = []
+
+    for match in re.finditer(pattern, text):
+        start = match.end()
+        brace_count = 1
+        i = start
+
+        while i < len(text) and brace_count > 0:
+            if text[i] == "{":
+                brace_count += 1
+            elif text[i] == "}":
+                brace_count -= 1
+            i += 1
+
+        if brace_count == 0:
+            matches.append(text[start : i - 1])
+
+    return matches
+
+
 def soft_format_reward_func(prompts, completions, **kwargs):
     """Big negative reward for generating an invalid regex"""
     # responses = [completion[0]["content"] for completion in completions]
     rewards = []
 
     for r in completions:
-        regex = extract_regex(r)
+        regex = extract_boxed(r)[0]
         try:
             re.compile(regex)
             score = 0.5  # small reward for generating a valid regex
@@ -42,6 +67,27 @@ def soft_format_reward_func(prompts, completions, **kwargs):
     return rewards
 
 
+def regex_similarity_reward_func(prompts, completions, **kwargs):
+    """Measure the distance between generated regex and actual regex and give reward based on how close the generation is to the ground truth"""
+    ground_truth_regexes = [x["reference_regex"] for x in kwargs["data"]]
+    rewards = []
+
+    for content, gt_regex in zip(completions, ground_truth_regexes):
+        pred_regex = extract_boxed(content)[0]
+
+        distance = Levenshtein.distance(pred_regex, gt_regex)
+        max_len = max(len(pred_regex), len(gt_regex))
+
+        if max_len == 0:
+            score = 0.0
+        else:
+            score = 1.0 - (distance / max_len)  # also the 'similarity'
+
+        rewards.append(score)
+
+    return rewards
+
+
 def correctness_reward_func(prompts, completions, **kwargs):
     positive_cases_batch = kwargs["positive_test_cases"]
     negative_cases_batch = kwargs["negative_test_cases"]
@@ -51,12 +97,12 @@ def correctness_reward_func(prompts, completions, **kwargs):
     for content, p_cases, n_cases in zip(
         completions, positive_cases_batch, negative_cases_batch
     ):
-        regex = extract_regex(content)
+        regex = extract_boxed(content)[0]
 
         try:
             re.compile(regex)
         except:
-            rewards.append(-1.0 + random.uniform(-0.005, 0.005))
+            rewards.append(0.0)
             continue
 
         match_limit = 50000  # Stricter limit for speed
@@ -82,3 +128,9 @@ def correctness_reward_func(prompts, completions, **kwargs):
         rewards.append(final_score + random.uniform(-0.001, 0.001))
 
     return rewards
+
+
+def name_generator(size: int = 12) -> str:
+    return "".join(
+        [random.choice(string.ascii_letters + string.digits) for _ in range(size)]
+    )

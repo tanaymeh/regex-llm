@@ -8,6 +8,7 @@ dependencies = [
     "accelerate>=1.12.0",
     "bitsandbytes>=0.49.0",
     "datasets>=4.4.1",
+    "levenshtein>=0.27.3",
     "openai>=2.9.0",
     "pybind11>=3.0.1",
     "pydantic>=2.12.5",

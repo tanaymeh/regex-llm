@@ -6,11 +6,16 @@ from datasets import load_dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from trl import GRPOTrainer, GRPOConfig
 
-from utils import soft_format_reward_func, correctness_reward_func
+from utils import (
+    soft_format_reward_func,
+    correctness_reward_func,
+    regex_similarity_reward_func,
+    name_generator,
+)
 
 
 class TrainingConfig:
-    MODEL_NAME = "Qwen/Qwen3-4B-Instruct-2507"
+    MODEL_NAME = "Qwen/Qwen3-4B"
     # MODEL_NAME = "Qwen/Qwen2.5-0.5B-Instruct"
     DATASET_PATH = "data/data.json"
     WANDB_PROJECT = "regex-r1"
@@ -23,7 +28,7 @@ def format_data(examples):
         formatted = (
             "<|im_start|>system\n"
             "You are a coding expert specializing in Regular Expressions. "
-            "Return only the valid regex pattern inside a code block.<|im_end|>\n"
+            "Please reason step by step, and put your final answer regex statement within \boxed{}<|im_end|>\n"
             "<|im_start|>user\n"
             f"{p}<|im_end|>\n"
             "<|im_start|>assistant\n"
@@ -58,16 +63,16 @@ def main():
 
     training_args = GRPOConfig(
         output_dir=TrainingConfig.OUTPUT_DIR,
-        run_name=f"grpo-fft-140gb",
+        run_name=f"{TrainingConfig.MODEL_NAME}_grpo_{name_generator()}_run",
         bf16=True,
-        optim="adamw_torch",  # Standard AdamW is fine with 140GB (faster than 8-bit)
+        # optim="adamw_torch",  # Standard AdamW is fine with 140GB (faster than 8-bit)
         # use_vllm=True,
         # vllm_gpu_memory_utilization=0.4,
         num_generations=32,
-        per_device_train_batch_size=4,
+        per_device_train_batch_size=8,
         generation_batch_size=32,
         per_device_eval_batch_size=32,
-        # Effective Batch Size = 1 (device) * 16 (accum) = 16
+        # Effective Batch Size = 8 (device) * 16 (accum) = 64
         gradient_accumulation_steps=16,
         max_prompt_length=512,
         max_completion_length=512,
@@ -82,7 +87,11 @@ def main():
 
     trainer = GRPOTrainer(
         model=TrainingConfig.MODEL_NAME,
-        reward_funcs=[soft_format_reward_func, correctness_reward_func],
+        reward_funcs=[
+            soft_format_reward_func,
+            regex_similarity_reward_func,
+            correctness_reward_func,
+        ],
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
