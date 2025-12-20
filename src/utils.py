@@ -75,7 +75,9 @@ def correctness_reward_func(prompts, completions, **kwargs):
 
         p_score = p_matches / len(p_cases) if p_cases else 0
         n_score = n_non_matches / len(n_cases) if n_cases else 0
-        final_score = (p_score + n_score) / 2.0
+        final_score = (
+            2 * (p_score * n_score) / (p_score + n_score + 1e-6)
+        )  # if p_score is 0, the whole thing becomes zero
 
         rewards.append(final_score + random.uniform(-0.001, 0.001))
 
