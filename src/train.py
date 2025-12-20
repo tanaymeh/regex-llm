@@ -79,11 +79,11 @@ def main():
         # use_vllm=True,
         # vllm_gpu_memory_utilization=0.4,
         num_generations=32,
-        per_device_train_batch_size=16,
+        per_device_train_batch_size=8,
         generation_batch_size=32,
         per_device_eval_batch_size=32,
         # Effective Batch Size = 32 (device) * 2 (accum) = 64
-        gradient_accumulation_steps=4,
+        gradient_accumulation_steps=8,
         max_prompt_length=512,
         max_completion_length=4096,
         learning_rate=5e-6,
