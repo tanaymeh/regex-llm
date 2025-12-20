@@ -79,13 +79,13 @@ def main():
         # use_vllm=True,
         # vllm_gpu_memory_utilization=0.4,
         num_generations=32,
-        per_device_train_batch_size=32,
+        per_device_train_batch_size=16,
         generation_batch_size=32,
         per_device_eval_batch_size=32,
         # Effective Batch Size = 32 (device) * 2 (accum) = 64
-        gradient_accumulation_steps=2,
+        gradient_accumulation_steps=4,
         max_prompt_length=512,
-        max_completion_length=789,
+        max_completion_length=1024,
         learning_rate=5e-6,
         gradient_checkpointing=True,
         eval_strategy="steps",
@@ -94,7 +94,8 @@ def main():
         logging_steps=1,
         report_to="wandb",
         beta=0.001,
-        project=TrainingConfig.WANDB_PROJECT,
+        temperature=0.8,
+        # project=TrainingConfig.WANDB_PROJECT,
     )
 
     trainer = GRPOTrainer(
