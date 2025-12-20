@@ -1,5 +1,6 @@
 # Reward functions
 import re
+import torch
 import random
 import fast_regex
 import Levenshtein
@@ -134,3 +135,58 @@ def name_generator(size: int = 12) -> str:
     return "".join(
         [random.choice(string.ascii_letters + string.digits) for _ in range(size)]
     )
+
+
+class LoggingRewardCallback:
+    def __init__(self, reward_funcs, log_every=10):
+        self.reward_funcs = reward_funcs
+        self.log_every = log_every
+        self.call_count = 0
+        self.__name__ = "logging_callback"
+
+    def __call__(self, prompts, completions, **kwargs):
+        if self.call_count % self.log_every == 0:
+            try:
+                # 1. Calculate and store all rewards
+                rewards_data = {}
+                total_rewards = torch.zeros(len(completions))
+
+                for func in self.reward_funcs:
+                    res = func(prompts=prompts, completions=completions, **kwargs)
+
+                    # Standardize inputs (list -> tensor)
+                    if isinstance(res, list):
+                        res = torch.tensor(res)
+                    elif isinstance(res, torch.Tensor):
+                        res = res.cpu()
+
+                    # Store specific scores and add to total
+                    rewards_data[func.__name__] = res
+                    total_rewards += res
+
+                # 2. Find the index of the best generation based on TOTAL score
+                best_idx = total_rewards.argmax().item()
+                best_completion = completions[best_idx]
+
+                # 3. Print the breakdown
+                print("\n" + "=" * 60)
+                print(f"STEP {self.call_count} | BEST GENERATION BREAKDOWN")
+                print("-" * 60)
+
+                # Print individual function scores for the winner
+                for func_name, scores in rewards_data.items():
+                    score = scores[best_idx].item()
+                    print(f"{func_name:<35}: {score:.4f}")
+
+                print("-" * 60)
+                print(f"{'TOTAL REWARD':<35}: {total_rewards[best_idx].item():.4f}")
+                print("=" * 60)
+                print(f"OUTPUT:\n{best_completion}")
+                print("=" * 60 + "\n")
+
+            except Exception as e:
+                print(f"Error in logging callback: {e}")
+
+        self.call_count += 1
+        # Return zeros so this callback doesn't affect training gradients
+        return [0.0] * len(completions)

@@ -11,6 +11,7 @@ from utils import (
     correctness_reward_func,
     regex_similarity_reward_func,
     name_generator,
+    LoggingRewardCallback,
 )
 
 
@@ -61,6 +62,15 @@ def main():
     #     lambda x: len(tokenizer(x["prompt"])["input_ids"]) <= max_length
     # )
 
+    reward_funcs = [
+        soft_format_reward_func,
+        regex_similarity_reward_func,
+        correctness_reward_func,
+    ]
+
+    logging_callback = LoggingRewardCallback(reward_funcs)
+    reward_funcs = reward_funcs + [logging_callback]
+
     training_args = GRPOConfig(
         output_dir=TrainingConfig.OUTPUT_DIR,
         run_name=f"{TrainingConfig.MODEL_NAME}_grpo_{name_generator()}_run",
@@ -69,11 +79,11 @@ def main():
         # use_vllm=True,
         # vllm_gpu_memory_utilization=0.4,
         num_generations=32,
-        per_device_train_batch_size=8,
+        per_device_train_batch_size=32,
         generation_batch_size=32,
         per_device_eval_batch_size=32,
-        # Effective Batch Size = 8 (device) * 16 (accum) = 64
-        gradient_accumulation_steps=16,
+        # Effective Batch Size = 32 (device) * 2 (accum) = 64
+        gradient_accumulation_steps=2,
         max_prompt_length=512,
         max_completion_length=789,
         learning_rate=5e-6,
@@ -83,16 +93,13 @@ def main():
         save_steps=50,
         logging_steps=1,
         report_to="wandb",
+        beta=0.001,
         project=TrainingConfig.WANDB_PROJECT,
     )
 
     trainer = GRPOTrainer(
         model=TrainingConfig.MODEL_NAME,
-        reward_funcs=[
-            soft_format_reward_func,
-            regex_similarity_reward_func,
-            correctness_reward_func,
-        ],
+        reward_funcs=reward_funcs,
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
