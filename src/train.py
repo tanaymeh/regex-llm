@@ -28,7 +28,7 @@ def format_data(examples):
         formatted = (
             "<|im_start|>system\n"
             "You are a coding expert specializing in Regular Expressions. "
-            "Please reason step by step, and put your final answer regex statement within \boxed{}<|im_end|>\n"
+            "Please reason step by step, and put your final answer within a ```regex ... ``` block. Only give ONE answer.<|im_end|>\n"
             "<|im_start|>user\n"
             f"{p}<|im_end|>\n"
             "<|im_start|>assistant\n"
@@ -75,7 +75,7 @@ def main():
         # Effective Batch Size = 8 (device) * 16 (accum) = 64
         gradient_accumulation_steps=16,
         max_prompt_length=512,
-        max_completion_length=512,
+        max_completion_length=789,
         learning_rate=5e-6,
         gradient_checkpointing=True,
         eval_strategy="steps",

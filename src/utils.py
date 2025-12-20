@@ -50,7 +50,7 @@ def soft_format_reward_func(prompts, completions, **kwargs):
     rewards = []
 
     for r in completions:
-        regex = extract_boxed(r)[0]
+        regex = extract_regex(r)
         try:
             re.compile(regex)
             score = 0.5  # small reward for generating a valid regex
@@ -73,7 +73,7 @@ def regex_similarity_reward_func(prompts, completions, **kwargs):
     rewards = []
 
     for content, gt_regex in zip(completions, ground_truth_regexes):
-        pred_regex = extract_boxed(content)[0]
+        pred_regex = extract_regex(content)
 
         distance = Levenshtein.distance(pred_regex, gt_regex)
         max_len = max(len(pred_regex), len(gt_regex))
@@ -97,7 +97,7 @@ def correctness_reward_func(prompts, completions, **kwargs):
     for content, p_cases, n_cases in zip(
         completions, positive_cases_batch, negative_cases_batch
     ):
-        regex = extract_boxed(content)[0]
+        regex = extract_regex(content)
 
         try:
             re.compile(regex)
