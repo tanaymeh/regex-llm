@@ -11,3 +11,5 @@ wheels/
 .env
 .vscode
 uv.lock
+src/local_train.py
+wandb

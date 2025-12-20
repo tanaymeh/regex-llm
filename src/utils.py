@@ -69,7 +69,7 @@ def soft_format_reward_func(prompts, completions, **kwargs):
 
 def regex_similarity_reward_func(prompts, completions, **kwargs):
     """Measure the distance between generated regex and actual regex and give reward based on how close the generation is to the ground truth"""
-    ground_truth_regexes = [x["reference_regex"] for x in kwargs["data"]]
+    ground_truth_regexes = kwargs["reference_regex"]
     rewards = []
 
     for content, gt_regex in zip(completions, ground_truth_regexes):
