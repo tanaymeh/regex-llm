@@ -45,6 +45,11 @@ def extract_boxed(text):
     return matches
 
 
+def is_valid_regex(expression: str) -> bool:
+    metachars = set(r"[](){}*+?|^")
+    return any(char in metachars for char in expression)
+
+
 def soft_format_reward_func(prompts, completions, **kwargs):
     """Big negative reward for generating an invalid regex"""
     # responses = [completion[0]["content"] for completion in completions]
@@ -54,12 +59,12 @@ def soft_format_reward_func(prompts, completions, **kwargs):
         regex = extract_regex(r)
         try:
             re.compile(regex)
-            score = 0.5  # small reward for generating a valid regex
-        except:
-            if "```" in r:
-                score = -0.5  # partial credit for correct structure
+            if not is_valid_regex(regex):
+                score = -1.0
             else:
-                score = -1.0  # big negative reward for generating an invalid regex
+                score = 0.0
+        except:
+            score = -1.0  # big negative reward for generating an invalid regex
         score += random.uniform(
             -0.005, 0.005
         )  # small noise to ensure we don't get 0 std
@@ -122,11 +127,20 @@ def correctness_reward_func(prompts, completions, **kwargs):
 
         p_score = p_matches / len(p_cases) if p_cases else 0
         n_score = n_non_matches / len(n_cases) if n_cases else 0
-        final_score = (
-            2 * (p_score * n_score) / (p_score + n_score + 1e-6)
-        )  # if p_score is 0, the whole thing becomes zero
+        # final_score = (
+        #     2 * (p_score * n_score) / (p_score + n_score + 1e-6)
+        # )  # if p_score is 0, the whole thing becomes zero
 
-        rewards.append(final_score + random.uniform(-0.001, 0.001))
+        final_score = (p_score * 0.7) + (n_score * 0.3)
+
+        final_score += random.uniform(-0.001, 0.001)
+
+        # Penalize the model for each new token it generates to force for a more concise thinking approach
+        token_count = len(regex) / 4  # rough token estimate
+        penalty = 0.0005 * token_count
+        final_score -= penalty
+
+        rewards.append(final_score)
 
     return rewards
 
