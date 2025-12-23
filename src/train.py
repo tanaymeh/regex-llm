@@ -76,13 +76,13 @@ def main():
         bf16=True,
         # optim="adamw_torch",  # Standard AdamW is fine with 140GB (faster than 8-bit)
         num_generations=32,
-        per_device_train_batch_size=8,
+        per_device_train_batch_size=2,
         generation_batch_size=32,
         per_device_eval_batch_size=32,
         # Effective Batch Size = 32 (device) * 2 (accum) = 64
         gradient_accumulation_steps=8,
         max_prompt_length=512,
-        max_completion_length=4096,
+        max_completion_length=1024,
         learning_rate=5e-6,
         gradient_checkpointing=True,
         eval_strategy="steps",
