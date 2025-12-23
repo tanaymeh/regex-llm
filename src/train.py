@@ -82,7 +82,7 @@ def main():
         # Effective Batch Size = 32 (device) * 2 (accum) = 64
         gradient_accumulation_steps=32,
         max_prompt_length=512,
-        max_completion_length=1600,
+        max_completion_length=3192,
         learning_rate=5e-6,
         gradient_checkpointing=True,
         eval_strategy="steps",
