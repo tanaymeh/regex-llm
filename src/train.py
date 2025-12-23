@@ -17,8 +17,8 @@ from utils import (
 
 
 class TrainingConfig:
-    MODEL_NAME = "Qwen/Qwen3-4B"
-    # MODEL_NAME = "Qwen/Qwen3-1.7B"
+    # MODEL_NAME = "Qwen/Qwen3-4B"
+    MODEL_NAME = "Qwen/Qwen3-1.7B"
     DATASET_PATH = "data/data.json"
     WANDB_PROJECT = "regex-r1"
     OUTPUT_DIR = "regex-r1-checkpoint"
@@ -31,7 +31,7 @@ def format_data(examples):
             "<|im_start|>system\n"
             "You are a coding expert specializing in Regular Expressions. "
             "Please reason step by step, and put your final answer within a ```regex ... ``` block. Only give ONE answer.<|im_end|>\n"
-            "Keep your reasoning concise, short and effective. No need to state the obvious and think too much."
+            "Keep your reasoning concise, short and effective. No need to state the obvious. You will be penalised for being wasteful and thinking too much."
             "<|im_start|>user\n"
             f"{p}<|im_end|>\n"
             "<|im_start|>assistant\n"
@@ -80,7 +80,7 @@ def main():
         generation_batch_size=24,
         per_device_eval_batch_size=24,
         # Effective Batch Size = 32 (device) * 2 (accum) = 64
-        gradient_accumulation_steps=8,
+        gradient_accumulation_steps=32,
         max_prompt_length=512,
         max_completion_length=1600,
         learning_rate=5e-6,
@@ -91,7 +91,7 @@ def main():
         logging_steps=1,
         report_to="wandb",
         beta=0.001,
-        temperature=0.8,
+        temperature=0.9,
         project=TrainingConfig.WANDB_PROJECT,
     )
 
