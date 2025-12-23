@@ -12,12 +12,13 @@ from utils import (
     regex_similarity_reward_func,
     name_generator,
     LoggingRewardCallback,
+    reasoning_length_penalty_func
 )
 
 
 class TrainingConfig:
-    # MODEL_NAME = "Qwen/Qwen3-4B"
-    MODEL_NAME = "Qwen/Qwen3-1.7B"
+    MODEL_NAME = "Qwen/Qwen3-4B"
+    # MODEL_NAME = "Qwen/Qwen3-1.7B"
     DATASET_PATH = "data/data.json"
     WANDB_PROJECT = "regex-r1"
     OUTPUT_DIR = "regex-r1-checkpoint"
@@ -30,6 +31,7 @@ def format_data(examples):
             "<|im_start|>system\n"
             "You are a coding expert specializing in Regular Expressions. "
             "Please reason step by step, and put your final answer within a ```regex ... ``` block. Only give ONE answer.<|im_end|>\n"
+            "Keep your reasoning concise, short and effective. No need to state the obvious."
             "<|im_start|>user\n"
             f"{p}<|im_end|>\n"
             "<|im_start|>assistant\n"
@@ -57,15 +59,12 @@ def main():
     # Format the prompts
     train_dataset = train_dataset.map(format_data, batched=True)
     eval_dataset = eval_dataset.map(format_data, batched=True)
-    # max_length = 512  # Match your config
-    # dataset = dataset.filter(
-    #     lambda x: len(tokenizer(x["prompt"])["input_ids"]) <= max_length
-    # )
 
     reward_funcs = [
         soft_format_reward_func,
         regex_similarity_reward_func,
         correctness_reward_func,
+        reasoning_length_penalty_func
     ]
 
     logging_callback = LoggingRewardCallback(reward_funcs)
@@ -76,8 +75,6 @@ def main():
         run_name=f"{TrainingConfig.MODEL_NAME}_grpo_{name_generator()}_run",
         bf16=True,
         # optim="adamw_torch",  # Standard AdamW is fine with 140GB (faster than 8-bit)
-        # use_vllm=True,
-        # vllm_gpu_memory_utilization=0.4,
         num_generations=32,
         per_device_train_batch_size=8,
         generation_batch_size=32,
@@ -95,7 +92,7 @@ def main():
         report_to="wandb",
         beta=0.001,
         temperature=0.8,
-        # project=TrainingConfig.WANDB_PROJECT,
+        project=TrainingConfig.WANDB_PROJECT,
     )
 
     trainer = GRPOTrainer(

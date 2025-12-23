@@ -16,9 +16,9 @@ def timeout_handler(signum, frame):
 
 
 def extract_regex(text: str) -> str:
-    match = re.search(r"```(?:regex)?\s*(.*?)\s*```", text, re.DOTALL)
-    if match:
-        return match.group(1).strip()
+    matches = re.findall(r"```(?:regex)?\s*(.*?)\s*```", text, re.DOTALL)
+    if matches:
+        return matches[-1].strip()
     return text.strip()
 
 
@@ -62,12 +62,9 @@ def soft_format_reward_func(prompts, completions, **kwargs):
             if not is_valid_regex(regex):
                 score = -1.0
             else:
-                score = 0.0
+                score = 0.01  # a little reward for generating a valid extractable regex
         except:
-            score = -1.0  # big negative reward for generating an invalid regex
-        score += random.uniform(
-            -0.005, 0.005
-        )  # small noise to ensure we don't get 0 std
+            score = -1.0  # big negative reward for generating a regex that doesn't compile
         rewards.append(score)
 
     return rewards
@@ -91,6 +88,24 @@ def regex_similarity_reward_func(prompts, completions, **kwargs):
 
         rewards.append(score)
 
+    return rewards
+
+
+def reasoning_length_penalty_func(prompts, completions, **kwargs):
+    rewards = []
+    for content in completions:
+
+        think_match = re.search(r"<think>(.*?)</think>", content, re.DOTALL)
+
+        if think_match:
+            thinking_content = think_match.group(1)
+            penalty = (len(thinking_content) / 300) * 0.01
+            rewards.append(-penalty) # We want the model to not think too much
+        elif "<think>" in content and "</think>" not in content:
+            rewards.append(-2.0) # the model was cut short while generating the response: not ideal
+        else:
+            rewards.append(0.0) # But still want it to think
+    
     return rewards
 
 
@@ -133,12 +148,12 @@ def correctness_reward_func(prompts, completions, **kwargs):
 
         final_score = (p_score * 0.7) + (n_score * 0.3)
 
-        final_score += random.uniform(-0.001, 0.001)
+        # final_score += random.uniform(-0.001, 0.001)
 
         # Penalize the model for each new token it generates to force for a more concise thinking approach
-        token_count = len(regex) / 4  # rough token estimate
-        penalty = 0.0005 * token_count
-        final_score -= penalty
+        # token_count = len(regex) / 4  # rough token estimate
+        # penalty = 0.0005 * token_count
+        # final_score -= penalty
 
         rewards.append(final_score)
 
