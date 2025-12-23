@@ -31,7 +31,7 @@ def format_data(examples):
             "<|im_start|>system\n"
             "You are a coding expert specializing in Regular Expressions. "
             "Please reason step by step, and put your final answer within a ```regex ... ``` block. Only give ONE answer.<|im_end|>\n"
-            "Keep your reasoning concise, short and effective. No need to state the obvious."
+            "Keep your reasoning concise, short and effective. No need to state the obvious and think too much."
             "<|im_start|>user\n"
             f"{p}<|im_end|>\n"
             "<|im_start|>assistant\n"
@@ -75,14 +75,14 @@ def main():
         run_name=f"{TrainingConfig.MODEL_NAME}_grpo_{name_generator()}_run",
         bf16=True,
         # optim="adamw_torch",  # Standard AdamW is fine with 140GB (faster than 8-bit)
-        num_generations=32,
+        num_generations=24,
         per_device_train_batch_size=2,
-        generation_batch_size=32,
-        per_device_eval_batch_size=32,
+        generation_batch_size=24,
+        per_device_eval_batch_size=24,
         # Effective Batch Size = 32 (device) * 2 (accum) = 64
         gradient_accumulation_steps=8,
         max_prompt_length=512,
-        max_completion_length=1024,
+        max_completion_length=1600,
         learning_rate=5e-6,
         gradient_checkpointing=True,
         eval_strategy="steps",

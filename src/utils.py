@@ -99,7 +99,7 @@ def reasoning_length_penalty_func(prompts, completions, **kwargs):
 
         if think_match:
             thinking_content = think_match.group(1)
-            penalty = (len(thinking_content) / 300) * 0.01
+            penalty = (len(thinking_content) / 1500) * 0.01
             rewards.append(-penalty) # We want the model to not think too much
         elif "<think>" in content and "</think>" not in content:
             rewards.append(-2.0) # the model was cut short while generating the response: not ideal
